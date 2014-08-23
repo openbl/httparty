@@ -18,3 +18,18 @@ Feature:  Basic Authentication
        | username | password   |
        | jcash    | maninblack |
     Then the return value should match 'Authenticated Page'
+
+  Scenario: Using a credential file with a page requiring Basic Authentication
+    Given a remote service that returns 'Authenticated Page'
+    And that service is accessed at the path '/basic_auth.html'
+    And that service is protected by Basic Authentication
+    And that service requires the username 'jcash' with the password 'maninblack'
+    And a file '.httpartyrc' with the contents:
+      """
+      0.0.0.0:
+        :basic_auth:
+          :username: jcash
+          :password: maninblack
+      """
+    When I call HTTParty#get with '/basic_auth.html'
+    Then the return value should match 'Authenticated Page'

@@ -41,3 +41,7 @@ When /I call HTTParty#get with '(.*)' and a digest_auth hash:/ do |url, auth_tab
     digest_auth: { username: h["username"], password: h["password"] }
   )
 end
+
+Given /^a file '(.*)' with the contents:$/ do |filename, string|
+  File.open(filename, 'w') { |file| file.puts string }
+end

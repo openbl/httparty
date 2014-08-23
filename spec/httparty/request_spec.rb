@@ -124,6 +124,52 @@ describe HTTParty::Request do
       request.send(:setup_raw_request)
       request.instance_variable_get(:@raw_request).body_stream.should == stream
     end
+
+    context "loading the options file" do
+      after(:each) do
+        File.delete(File.dirname(__FILE__) + '/../../.httpartyrc')
+      end
+
+      it 'reads the username and password from the options file' do
+        file_options_yaml = {
+          'api.foo.com' => {
+            basic_auth: {
+              username: 'joe',
+              password: 'abc123'
+            }
+          },
+          'api.bar.com' => {
+            basic_auth: {
+              username:'mary',
+              password:'xyz789'
+            }
+          }
+        }.to_yaml
+        File.open(File.dirname(__FILE__) + '/../../.httpartyrc', 'w') { |file| file.puts(file_options_yaml) }
+
+        request = HTTParty::Request.new(Net::HTTP::Post, 'http://api.foo.com/v1', body_stream: StringIO.new)
+
+        request.options[:basic_auth][:username].should == 'joe'
+        request.options[:basic_auth][:password].should == 'abc123'
+      end
+
+      it 'can be overriden at initialization' do
+        file_options_yaml = {
+          'api.foo.com' => {
+            basic_auth: {
+              username: 'joe',
+              password: 'abc123'
+            }
+          },
+        }.to_yaml
+        File.open(File.dirname(__FILE__) + '/../../.httpartyrc', 'w') { |file| file.puts(file_options_yaml) }
+
+        request = HTTParty::Request.new(Net::HTTP::Post, 'http://api.foo.com/v1', body_stream: StringIO.new, basic_auth: {username: 'mary', password: 'xyz789'})
+
+        request.options[:basic_auth][:username].should == 'mary'
+        request.options[:basic_auth][:password].should == 'xyz789'
+      end
+    end
   end
 
   describe "#uri" do

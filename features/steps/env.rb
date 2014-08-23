@@ -3,6 +3,11 @@ require './lib/httparty'
 require 'spec/expectations'
 
 Before do
+  temp_options_file = File.dirname(__FILE__) + '/../../.httpartyrc'
+  temp_options_dir = File.dirname(temp_options_file)
+  Dir.mkdir(temp_options_dir) unless Dir.exists?(temp_options_dir)
+  File.delete(temp_options_file) if File.exists?(temp_options_file)
+
   def new_port
     server = TCPServer.new('0.0.0.0', nil)
     port = server.addr[1]
@@ -18,5 +23,8 @@ Before do
 end
 
 After do
+  temp_options_file = File.dirname(__FILE__) + '/../../.httpartyrc'
+  File.delete(temp_options_file) if File.exists?(temp_options_file)
+
   @server.stop
 end

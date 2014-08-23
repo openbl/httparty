@@ -32,18 +32,32 @@ module HTTParty
     def initialize(http_method, path, o={})
       self.http_method = http_method
       self.path = path
-      self.options = {
+      self.options = setup_options(o)
+    end
+
+    def path=(uri)
+      @path = URI(uri)
+    end
+
+    def setup_options(o)
+      default_options(o).merge(file_options_for_host).merge(o)
+    end
+
+    def default_options(o)
+      {
         limit: o.delete(:no_follow) ? 1 : 5,
         assume_utf16_is_big_endian: true,
         default_params: {},
         follow_redirects: true,
         parser: Parser,
         connection_adapter: ConnectionAdapter
-      }.merge(o)
+      }
     end
 
-    def path=(uri)
-      @path = URI(uri)
+    def file_options_for_host
+      return {} unless File.exists?(File.dirname(__FILE__) + '/../../.httpartyrc')
+
+      Psych.load(File.open(File.dirname(__FILE__) + '/../../.httpartyrc'))[path.host]
     end
 
     def request_uri(uri)
